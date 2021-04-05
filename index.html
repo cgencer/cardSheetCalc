@@ -107,15 +107,14 @@
 
                 $('#sheetNo').text(pageNo);
 
-                combine = ((w.numCards < Math.floor(cardsOnASheet / 3)) ? 3 : ((w.numCards < Math.floor(cardsOnASheet / 2)) ? 2 : 1));
-                $('#numBlanks').text(Math.floor((cardsOnASheet - onLastSheet) * combine));
-                if(onLastSheet < cardsOnASheet/2){
-                    console.log('smaller');
-                }
+                combine = ((w.numCards < Math.floor(cardsOnASheet / 6)) ? 6 : ((w.numCards < Math.floor(cardsOnASheet / 3)) ? 3 : ((w.numCards < Math.floor(cardsOnASheet / 2)) ? 2 : 1)));
 
                 for (var cycle = 0; cycle < combine; cycle++) {
 
                     while (cardNo <= onLastSheet-1) {
+
+                        $('#numBlanks').text((cardsOnASheet*combine) - (cardNo*combine) - 1);
+
                         var cardPosX = ( cardNo * ( (Number(w.cardSize[window.vars.dikey ? 0 : 1]) + 1 ) ) ) % ( cardsInRow * ( (Number(w.cardSize[window.vars.dikey ? 0 : 1]) + 1 ) ) );
                         cardPosX *= w.ratio;
                         $('#sheetMargin').append('<div class="card" style="' +
@@ -137,20 +136,7 @@
                     if(cardNo % cardsInRow === 0){
                         cardPosY -= ( Number(w.cardSize[window.vars.dikey ? 1 : 0]) + 1 ) * w.ratio;
                     }
-/*
-                    if(cycle > 0 && cycleChangeVal == cycle){
-                        cycleChangeFlag = true;
-                        cycleChangeVal = cycle;
-                        cardPosY += ( Number(w.cardSize[window.vars.dikey ? 1 : 0]) + 1 ) * w.ratio;
 
-                        if(cycleChangeFlag && combine != 1 && cardNo <= onLastSheet){
-//                            cardPosY -= ( Number(w.cardSize[window.vars.dikey ? 1 : 0]) + 1 ) * w.ratio;
-                            cycleChangeFlag = false;
-                            cycleChangeVal = cycle;
-                        }
-
-                    }
-*/
                     cardPosY += ( Number(w.cardSize[window.vars.dikey ? 1 : 0]) + 1 ) * w.ratio;
                     cardPosX = 0;
                     cardNo = 0;

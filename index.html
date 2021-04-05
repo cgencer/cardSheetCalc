@@ -113,7 +113,12 @@
 
                     while (cardNo <= onLastSheet-1) {
 
-                        $('#numBlanks').text((cardsOnASheet*combine) - (cardNo*combine) - 1);
+                        $('#numBlanks').text((cardsOnASheet) - ((cardNo+1)*combine));
+
+                        console.log('cardsOnASheet:'+cardsOnASheet+' cardNo:'+(cardNo+1))
+                        if((cardsOnASheet) % (cardNo+1) === 0){
+//                            $('#numBlanks').text('0');
+                        }
 
                         var cardPosX = ( cardNo * ( (Number(w.cardSize[window.vars.dikey ? 0 : 1]) + 1 ) ) ) % ( cardsInRow * ( (Number(w.cardSize[window.vars.dikey ? 0 : 1]) + 1 ) ) );
                         cardPosX *= w.ratio;

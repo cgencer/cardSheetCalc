@@ -72,7 +72,10 @@
             var cardsOnASheet = cardsInRow * rowsInSheet;
             var combine = 1;
             var pageNo = Math.ceil(v.numCards+1 / cardsOnASheet);
-            $('#numAllCards').text((v.numCards+1) * Number($('#setSize').val()*10));
+            var numAllCDS = (v.numCards+1) * Number($('#setSize').val()*10);
+            numAllCDS = (numAllCDS>1000) ? Math.floor(numAllCDS/1000) + 'K' : numAllCDS;
+            $('#numAllCards').text(numAllCDS);
+
             $('#numSheet').text(Math.floor(pageNo * Number($('#setSize').val()*10) / combine));
             var newDeckSize = Number($('#deckSize').val()) + Number(plus1) + Number(plus2);
             $('#numDeck').text(newDeckSize+1);
@@ -98,7 +101,9 @@
                 var rowsInSheet = Math.floor(Number(w.sheetSize[1] - (w.sheetMargins * 2)) / (Number(w.cardSize[w.dikey ? 1 : 0]) + w.cardMargins));
                 var cardsOnASheet = cardsInRow * rowsInSheet;
 
-                $('#numAllCards').text((w.numCards+1) * Number($('#setSize').val()*10));
+                var numAllCDS = (v.numCards+1) * Number($('#setSize').val()*10);
+                numAllCDS = (numAllCDS>1000) ? Math.floor(numAllCDS/1000) + 'K' : numAllCDS;
+                $('#numAllCards').text(numAllCDS);
 
                 var onLastSheet = (w.numCards % cardsOnASheet) + 1;
                 var spilled = (w.numCards >= cardsOnASheet) ? true : false;
@@ -111,14 +116,17 @@
 
                 for (var cycle = 0; cycle < combine; cycle++) {
 
-                    while (cardNo <= onLastSheet-1) {
+                    while (cardNo <= (onLastSheet-1)) {
+
+                        if(cardNo === 1){
+                            $('#sheetNo').text(pageNo);
+                            var numAllCDS = (v.numCards+1) * Number($('#setSize').val()*10);
+                            numAllCDS = (numAllCDS>1000) ? Math.floor(numAllCDS/1000) + 'K' : numAllCDS;
+                            $('#numAllCards').text(numAllCDS);
+                        }
 
                         $('#numBlanks').text((cardsOnASheet) - ((cardNo+1)*combine));
-
                         console.log('cardsOnASheet:'+cardsOnASheet+' cardNo:'+(cardNo+1))
-                        if((cardsOnASheet) % (cardNo+1) === 0){
-//                            $('#numBlanks').text('0');
-                        }
 
                         var cardPosX = ( cardNo * ( (Number(w.cardSize[window.vars.dikey ? 0 : 1]) + 1 ) ) ) % ( cardsInRow * ( (Number(w.cardSize[window.vars.dikey ? 0 : 1]) + 1 ) ) );
                         cardPosX *= w.ratio;
@@ -129,10 +137,10 @@
                                 '  left:' + (offset.left + cardPosX) + 'px; ' +
                                 '   top:' + (offset.top  + cardPosY) + 'px;">' + (cardNo + (spilled ? cardsOnASheet*(pageNo-1) : 0) + 1) + '</div>');
                         cardNo++;
-                        if(cardNo % cardsInRow === 0){
+                        if((cardNo) % (cardsInRow) === 0){
                             cardPosY += ( Number(w.cardSize[window.vars.dikey ? 1 : 0]) + 1 ) * w.ratio;
                             if(actualRow > rowsInSheet){
-                                break;
+//                                break;
                             }
                             cardPosX = 0;
                         }

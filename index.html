@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>panda</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="row" style="text-align: right;">
+            <div class="col">
+                <section>Sheet Generator</section>
+            </div>
+            <div class="col">
+                
+                <div class="row"><div class="col"><select id="sheetSize"><optgroup label="select sheet size"><option value="610x565" selected="">Ivorycore Card Sheet (610 x 565 mm)</option><option value="14">This is item 3</option></optgroup></select></div></div>
+                
+                <div class="row"><div class="col"><select id="cardSize"><optgroup label="select card size"><option value="44x67">Mini Euro (44 x 67 mm)</option><option value="63x88" selected="">Blackjack Cards (63 x 88 mm)</option><option value="57x87">Bridge (57 x 87 mm)</option><option value="59x91">Oversized Euro (59 x 91 mm)</option><option value="70x110">Tarot (70 x 110 mm)</option></optgroup></select></div></div>
+
+                <div class="row"><div class="col"><input type="range" id="setSize" min="1" max="25" value="10"></div>total sets:&nbsp;<span id="numSet">100</span>&nbsp;sets.</div>
+
+                <div class="row"><div class="col"><input type="range" id="deckSize" min="0" max="98" value="52"></div><span id="numDeck">52</span>&nbsp;cards in deck.</div>
+
+                <div class="row"><div class="col">add: <input type="checkbox" id="plusOneHundred">+100&nbsp;<input type="checkbox" id="plusTwoHundred">+200&nbsp;cards.</div></div>
+
+                <div class="row"><div class="col">with blank space for <span id="numBlanks" style="font-size:1.5em;">0</span>&nbsp; more cards.</div></div>
+<!--                <div class="row"><div class="col"><input type="button" id="flipper" value="Flip cards horiz/vert" /></div></div> -->
+                <div class="row"><div class="col">only the <strong>LAST SHEET</strong> is visible</div></div>
+                <div class="row"><div class="col"><strong>Total: sheet no: <span id="sheetNo" style="font-size:1.5em;">0</span>; there are <span id="numSheet" style="font-size:1.5em;">0</span>&nbsp;sheets (<span id="numAllCards">1</span> cards).</strong></div></div>
+            </div>
+        </div>
+    </div>
+    <div class="container" style="margin-top: 5px;">
+        <div class="row" id="konteyner" style="height: 450px;"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript">
+    (function($) {
+    'use strict';
+        $(function() {
+
+            var plus1 = $('#plusOneHundred').prop('checked') == 'on' ? 100 : 0;
+            var plus2 = $('#plusTwoHundred').prop('checked') == 'on' ? 200 : 0;
+            var theRatio = 1;
+
+            window.vars = {
+                ratio: theRatio,
+                sheetMargins: 10,
+                cardMargins: 2,
+                dikey: true,
+                numCards: Number($('#deckSize').val()) + Number(plus1) + Number(plus2),
+                sheetSize: $('#sheetSize').val().split('x'),
+                cardSize: $('#cardSize').val().split('x')
+            };
+            var v = window.vars;
+
+            $('#konteyner').html('<div id="sheet" style="'+
+            'width:'  + Number(v.sheetSize[0] * v.ratio) + 'px;' +
+            'height:' + Number(v.sheetSize[1] * v.ratio) + 'px;' +
+                                            'border:1px solid #000;margin:auto;vertical-align:top;">'+
+            '<div id="sheetMargin" style="' +
+            'width:'  + Number(v.sheetSize[0] - (2 * v.sheetMargins * v.ratio)) * v.ratio + 'px;' +
+            'height:' + Number(v.sheetSize[1] - (2 * v.sheetMargins * v.ratio)) * v.ratio + 'px;' +
+                                            'border:1px dashed #f55;margin:' + (v.sheetMargins * v.ratio)+'px;"></div></div>');
+
+            var cardsOnASheet = cardsInRow * rowsInSheet;
+            var combine = 1;
+            var pageNo = Math.ceil(v.numCards+1 / cardsOnASheet);
+            $('#numAllCards').text((v.numCards+1) * Number($('#setSize').val()*10));
+            $('#numSheet').text(Math.floor(pageNo * Number($('#setSize').val()*10) / combine));
+            var newDeckSize = Number($('#deckSize').val()) + Number(plus1) + Number(plus2);
+            $('#numDeck').text(newDeckSize+1);
+
+            var cardsInRow = Math.floor(Number(v.sheetSize[0] - (v.sheetMargins * 2)) / (Number(v.cardSize[v.dikey ? 0 : 1]) + v.cardMargins));
+            var rowsInSheet = Math.floor(Number(v.sheetSize[1] - (v.sheetMargins * 2)) / (Number(v.cardSize[v.dikey ? 1 : 0]) + v.cardMargins));
+
+            var render = function(w){
+    
+                var sheetW = Number(w.sheetSize[0]) - w.sheetMargins;
+                var sheetH = Number(w.sheetSize[1]) - w.sheetMargins;
+
+                $('#sheetMargin').html('');
+
+                var offset = $('#sheetMargin').offset();
+                var cardNo = 0;
+                var cardPosY = 0;
+                var actualRow = 0;
+                var cycleChangeFlag = false;
+                var cycleChangeVal = 0;
+
+                var cardsInRow = Math.floor(Number(w.sheetSize[0] - (w.sheetMargins * 2)) / (Number(w.cardSize[w.dikey ? 0 : 1]) + w.cardMargins));
+                var rowsInSheet = Math.floor(Number(w.sheetSize[1] - (w.sheetMargins * 2)) / (Number(w.cardSize[w.dikey ? 1 : 0]) + w.cardMargins));
+                var cardsOnASheet = cardsInRow * rowsInSheet;
+
+                $('#numAllCards').text((w.numCards+1) * Number($('#setSize').val()*10));
+
+                var onLastSheet = (w.numCards % cardsOnASheet) + 1;
+                var spilled = (w.numCards >= cardsOnASheet) ? true : false;
+                var pageNo = Math.ceil(w.numCards / cardsOnASheet);
+                $('#numSheet').text(Math.floor(pageNo * Number($('#setSize').val()*10) / combine));
+
+                $('#sheetNo').text(pageNo);
+
+                combine = ((w.numCards < Math.floor(cardsOnASheet / 3)) ? 3 : ((w.numCards < Math.floor(cardsOnASheet / 2)) ? 2 : 1));
+                $('#numBlanks').text(Math.floor((cardsOnASheet - onLastSheet) * combine));
+                if(onLastSheet < cardsOnASheet/2){
+                    console.log('smaller');
+                }
+
+                for (var cycle = 0; cycle < combine; cycle++) {
+
+                    while (cardNo <= onLastSheet-1) {
+                        var cardPosX = ( cardNo * ( (Number(w.cardSize[window.vars.dikey ? 0 : 1]) + 1 ) ) ) % ( cardsInRow * ( (Number(w.cardSize[window.vars.dikey ? 0 : 1]) + 1 ) ) );
+                        cardPosX *= w.ratio;
+                        $('#sheetMargin').append('<div class="card" style="' +
+                                'background-color:#ccc; position:absolute;' +
+                                ' width:' + (w.cardSize[window.vars.dikey ? 0 : 1] * w.ratio) + 'px; ' + 
+                                'height:' + (w.cardSize[window.vars.dikey ? 1 : 0] * w.ratio) + 'px; ' +
+                                '  left:' + (offset.left + cardPosX) + 'px; ' +
+                                '   top:' + (offset.top  + cardPosY) + 'px;">' + (cardNo + (spilled ? cardsOnASheet*(pageNo-1) : 0) + 1) + '</div>');
+                        cardNo++;
+                        if(cardNo % cardsInRow === 0){
+                            cardPosY += ( Number(w.cardSize[window.vars.dikey ? 1 : 0]) + 1 ) * w.ratio;
+                            if(actualRow > rowsInSheet){
+                                break;
+                            }
+                            cardPosX = 0;
+                        }
+                    }
+
+                    if(cardNo % cardsInRow === 0){
+                        cardPosY -= ( Number(w.cardSize[window.vars.dikey ? 1 : 0]) + 1 ) * w.ratio;
+                    }
+/*
+                    if(cycle > 0 && cycleChangeVal == cycle){
+                        cycleChangeFlag = true;
+                        cycleChangeVal = cycle;
+                        cardPosY += ( Number(w.cardSize[window.vars.dikey ? 1 : 0]) + 1 ) * w.ratio;
+
+                        if(cycleChangeFlag && combine != 1 && cardNo <= onLastSheet){
+//                            cardPosY -= ( Number(w.cardSize[window.vars.dikey ? 1 : 0]) + 1 ) * w.ratio;
+                            cycleChangeFlag = false;
+                            cycleChangeVal = cycle;
+                        }
+
+                    }
+*/
+                    cardPosY += ( Number(w.cardSize[window.vars.dikey ? 1 : 0]) + 1 ) * w.ratio;
+                    cardPosX = 0;
+                    cardNo = 0;
+
+                    var maxH = (w.sheetSize[1] - (w.sheetMargins * 2));
+                    var cardH = Number(w.cardSize[w.dikey ? 0 : 1]) + w.cardMargins;
+                    var cardW = Number(w.cardSize[w.dikey ? 1 : 0]) + w.cardMargins;
+                    if( maxH - (rowsInSheet * cardH) > cardW ){
+    //                    alert('space left');
+                    }
+
+                }
+
+            };
+
+            render(v);
+
+            $('#setSize').on('change', function(){
+                var plus1 = $('#plusOneHundred').prop('checked') ? 100 : 0;
+                var plus2 = $('#plusTwoHundred').prop('checked') ? 200 : 0;
+                var newDeckSize = Number($('#deckSize').val()) + Number(plus1) + Number(plus2) + 1;
+                $('#numDeck').text(newDeckSize+1);
+                $('#numSet').text( $(this).val() * 100 );
+                render({
+                    ratio: theRatio,
+                    sheetMargins: 10,
+                    cardMargins: 2,
+                    dikey: true,
+                    numCards: newDeckSize,
+                    sheetSize: $('#sheetSize').val().split('x'),
+                    cardSize: $('#cardSize').val().split('x')
+                });
+            });
+            $('#deckSize, #plusOneHundred, #plusTwoHundred').on('change', function(){
+
+                var plus1 = $('#plusOneHundred').prop('checked') ? 100 : 0;
+                var plus2 = $('#plusTwoHundred').prop('checked') ? 200 : 0;
+                var newDeckSize = Number($('#deckSize').val()) + Number(plus1) + Number(plus2) + 1;
+                $('#numDeck').text(newDeckSize+1);
+                render({
+                    ratio: theRatio,
+                    sheetMargins: 10,
+                    cardMargins: 2,
+                    dikey: true,
+                    numCards: newDeckSize,
+                    sheetSize: $('#sheetSize').val().split('x'),
+                    cardSize: $('#cardSize').val().split('x')
+                });
+            });
+            $('#cardSize').on('change', function(){
+                var plus1 = $('#plusOneHundred').prop('checked') ? 100 : 0;
+                var plus2 = $('#plusTwoHundred').prop('checked') ? 200 : 0;
+                var newDeckSize = Number($('#deckSize').val()) + Number(plus1) + Number(plus2) + 1;
+                $('#numDeck').text(newDeckSize+1);
+                render({
+                    ratio: theRatio,
+                    sheetMargins: 10,
+                    cardMargins: 2,
+                    numCards: newDeckSize,
+                    dikey: true,
+                    sheetSize: $('#sheetSize').val().split('x'),
+                    cardSize: $('#cardSize').val().split('x')
+                });
+            });
+            $('#flipper').on('click', function(){
+                var plus1 = $('#plusOneHundred').prop('checked') ? 100 : 0;
+                var plus2 = $('#plusTwoHundred').prop('checked') ? 200 : 0;
+                var newDeckSize = Number($('#deckSize').val()) + Number(plus1) + Number(plus2) + 1;
+                $('#numDeck').text(newDeckSize+1);
+                window.vars.dikey = window.vars.dikey ? false : true;
+                render({
+                    ratio: theRatio,
+                    sheetMargins: 10,
+                    cardMargins: 2,
+                    numCards: newDeckSize,
+                    dikey: window.vars.dikey,
+                    sheetSize: $('#sheetSize').val().split('x'),
+                    cardSize: $('#cardSize').val().split('x')
+                });
+            });
+
+        });
+    })(jQuery);
+    </script>
+</body>
+
+</html>
